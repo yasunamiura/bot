@@ -41,13 +41,15 @@ async def on_ready():
     # メッセージを保存するCSVファイルを開く
     with open('output.csv', 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        writer.writerow(["Username", "UserID", "MessageID", "Timestamp", "Content"])
+        # "Nickname" 列を追加
+        writer.writerow(["Username", "Nickname", "UserID", "MessageID", "Timestamp", "Content"])
 
-        # 非同期リスト内包表記を使用してチャンネルからメッセージを取得（最後に取得したメッセージID以降）
         messages = [message async for message in channel.history(limit=1000, after=after)]
         
         for message in messages:
-            writer.writerow([message.author.name, message.author.id, message.id, message.created_at, message.content])
+            # サーバー上のメンバーであればニックネームを、そうでなければユーザー名を使用する
+            nickname = message.author.nick if message.author.nick else message.author.name
+            writer.writerow([message.author.name, nickname, message.author.id, message.id, message.created_at, message.content])
 
     if messages:
         # 最新のメッセージIDをファイルに記録
